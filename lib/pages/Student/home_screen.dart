@@ -1,5 +1,6 @@
 import 'package:eduevent_hub/Service/Events/event_activity.dart';
 import 'package:eduevent_hub/Service/authentication.dart';
+import 'package:eduevent_hub/components/event_card.dart';
 import 'package:eduevent_hub/pages/Auth%20Screens/loginorsignup.dart';
 import 'package:eduevent_hub/pages/Events%20Screen/event_stepper.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +9,6 @@ import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import 'interaction_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -282,93 +281,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Format into 12-hour format with AM/PM
                       final endTime = DateFormat("hh:mm a").format(dte);
 
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => EventDetailsScreen(
-                                event: eventData,
-                                eventUrl: resourceImage,
-                              ),
-                            ),
-                          );
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          margin: EdgeInsets.symmetric(vertical: 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Organizer Row
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundImage: NetworkImage(
-                                        resourceLogo,
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        resourceName,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        // Handle follow/unfollow
-                                      },
-                                      child: Text('Follow'),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Event Image
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.network(
-                                  resourceImage,
-                                  width: double.infinity,
-                                  height: 150,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              // Event Title
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0,
-                                ),
-                                child: Text(
-                                  eventData["event_name"],
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              // Event Time and Location
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0,
-                                ),
-                                child: Text(
-                                  ' Time $startTime - $endTime • ${eventData["location"]}',
-                                  style: TextStyle(color: Colors.grey[600]),
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                            ],
-                          ),
-                        ),
+                      return EventCard(
+                        eventData: eventData,
+                        resourceImage: resourceImage,
+                        resourceLogo: resourceLogo,
+                        resourceName: resourceName,
+                        startTime: startTime,
+                        endTime: endTime,
                       );
                     },
                   );
