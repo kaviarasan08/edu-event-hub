@@ -23,7 +23,7 @@ class _OrganizerDashboardState extends State<OrganizerDashboard> {
         .eq('college_id', widget.organizerId)
         .order('start_date', ascending: true);
     print(' event_id : ${res[0]['event_id']}');
-    getImage(res[0]['event_id']);
+    // getImage(res[0]['event_id']);
 
     return (res as List).map((e) => e as Map<String, dynamic>).toList();
   }

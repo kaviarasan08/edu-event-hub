@@ -65,33 +65,91 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
       final regId = regRes['id'];
 
-      // 3️⃣ Check if attendance already exists
-      final attendRes = await supabase
-          .from("attendance")
-          .select("id")
-          .eq("registration_id", regId)
-          .maybeSingle();
-
-      if (attendRes != null) {
-        _showMessage("⚠️ Already Marked!", Colors.orange);
-        return;
-      }
-
       // 4️⃣ Insert attendance
       // final user = supabase.auth.currentUser;
-      await supabase.from("attendance").insert({
-        "registration_id": regId,
-        "event_id": qrEventId,
-        "scanned_by": userId,
-      });
 
-      _showMessage("✅ Attendance Marked", Colors.green);
+      // show name card
+      showUserCard(userId, qrEventId, regId);
     } catch (e) {
       _showMessage("Error: $e", Colors.red);
       print(e);
     } finally {
       setState(() => isProcessing = false);
     }
+  }
+
+  Future<Map<String, dynamic>> getUser(String userId) async {
+    final res = await supabase
+        .from('students')
+        .select()
+        .eq('user_id', userId)
+        .single();
+    print('Student: $res');
+    return res;
+  }
+
+  void showUserCard(String userId, String qrEventId, String regId) async {
+    final userData = await getUser(userId);
+    String res = 'loading..';
+    // 3️⃣ Check if attendance already exists
+    final attendRes = await supabase
+        .from("attendance")
+        .select("id")
+        .eq("registration_id", regId)
+        .maybeSingle();
+
+    // if (attendRes != null) {
+    //   _showMessage("⚠️ Already Marked!", Colors.orange);
+    //   return;
+    // }
+    // setState(() {
+    //   res = ' ⚠️ Already Attendance Marked';
+    // });
+    await supabase.from("attendance").insert({
+      "registration_id": regId,
+      "event_id": qrEventId,
+      "scanned_by": userId,
+    });
+
+    setState(() {
+      res = '✅ Attendance Marked';
+    });
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            spacing: 8.0,
+            children: [
+              ListTile(
+                leading: (userData['profile_image_url'] != null)
+                    ? Image.network(userData['profile_image_url'])
+                    : Icon(Icons.person),
+                title: Text(userData['name']),
+                subtitle: Text(userData['email']),
+              ),
+              Text(
+                (attendRes != null)
+                    ? 'Already attendance marked'
+                    : 'Attendance marked',
+                style: TextStyle(
+                  color: (attendRes != null)
+                      ? Colors.orange
+                      : (res == 'loading..')
+                      ? Colors.grey[400]
+                      : Colors.green,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+  
+
+    // _showMessage("✅ Attendance Marked", Colors.green);
   }
 
   void _showMessage(String msg, Color color) {
@@ -102,9 +160,11 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(title: const Text("Scan Attendance"), centerTitle: true),
       body: Stack(
+        // alignment: Alignment.center,
         children: [
           MobileScanner(onDetect: _onDetect),
           if (isProcessing)
@@ -114,6 +174,20 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                 child: CircularProgressIndicator(color: Colors.white),
               ),
             ),
+          Positioned(
+            top: size.height * 0.1,
+            left: 40,
+            right: 40,
+            child: Container(
+              height: 320,
+
+              width: size.width * 0.8,
+              decoration: BoxDecoration(
+                border: Border.all(width: 0.8, color: Colors.white),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
         ],
       ),
     );

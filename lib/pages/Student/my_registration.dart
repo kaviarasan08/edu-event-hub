@@ -58,7 +58,7 @@ class _MyRegistrationsPageState extends State<MyRegistrationsPage> {
           // ✅ Keep only events that have not yet ended
           if (endDateTime.isAfter(now)) {
             filtered.add(reg);
-          } 
+          }
         }
       }
 
@@ -76,6 +76,43 @@ class _MyRegistrationsPageState extends State<MyRegistrationsPage> {
         });
       }
     }
+  }
+
+  void zoomQr(
+    String eventName,
+    String location,
+    String qrCode,
+    String startTime,
+    String endTime,
+    String status,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(16.0),
+
+          // height: 400,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(eventName, style: Theme.of(context).textTheme.titleLarge),
+              Text("📍 $location"),
+              // Text(
+              //   "📆 ${event['start_date']} (Day: ${event['start_day']})",
+              // ),
+              const SizedBox(height: 12),
+              Center(child: QrImageView(data: qrCode, size: 200)),
+              const SizedBox(height: 8),
+              Text("Status: $status"),
+              Text("⏰ $startTime to $endTime"),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -97,31 +134,46 @@ class _MyRegistrationsPageState extends State<MyRegistrationsPage> {
                 final reg = activeRegistrations[index];
                 final event = reg['events'];
 
-                return Card(
-                  margin: const EdgeInsets.all(12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          event['event_name'],
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        Text("📍 ${event['location']}"),
-                        Text(
-                          "📆 ${event['start_date']} (Day: ${event['start_day']})",
-                        ),
-                        const SizedBox(height: 12),
-                        Center(
-                          child: QrImageView(data: reg['ticket_qr'], size: 200),
-                        ),
-                        const SizedBox(height: 8),
-                        Text("Status: ${reg['status']}"),
-                        Text(
-                          "⏰ ${event['start_time']} to ${event['end_time']}",
-                        ),
-                      ],
+                return InkWell(
+                  onTap: () {
+                    zoomQr(
+                      event['event_name'],
+                      event['location'],
+                      reg['ticket_qr'],
+                      event['start_time'],
+                      event['end_time'],
+                      reg['status'],
+                    );
+                  },
+                  child: Card(
+                    margin: const EdgeInsets.all(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            event['event_name'],
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          Text("📍 ${event['location']}"),
+                          Text(
+                            "📆 ${event['start_date']} (Day: ${event['start_day']})",
+                          ),
+                          const SizedBox(height: 12),
+                          Center(
+                            child: QrImageView(
+                              data: reg['ticket_qr'],
+                              size: 200,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text("Status: ${reg['status']}"),
+                          Text(
+                            "⏰ ${event['start_time']} to ${event['end_time']}",
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
