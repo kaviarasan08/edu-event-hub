@@ -6,7 +6,6 @@ import 'package:eduevent_hub/models/college.dart';
 import 'package:eduevent_hub/pages/Auth%20Screens/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/student.dart';
 import 'Auth Screens/loginorsignup.dart';
@@ -39,9 +38,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // TODO: implement initState
     super.initState();
     getName();
-    if (widget.role == 'Student') {
-      getFollowersCount();
-    }
   }
 
   void getName() async {
@@ -91,31 +87,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('Select the image...!!!')));
       return false;
-    }
-  }
-
-  int followerCount = 0;
-
-  void getFollowersCount() async {
-    try {
-      final res = await _supabase
-          .from('followers')
-          .select('*')
-          .eq('student_id', widget.userId)
-          .count(CountOption.exact);
-
-      final count = res.count ?? 0; // ✅ safely get count
-
-      print('Follower count: $count');
-
-      setState(() {
-        followerCount = count;
-      });
-    } catch (e) {
-      print('Error fetching followers count: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error loading followers count')));
     }
   }
 
@@ -382,14 +353,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: Colors.blue,
                       ),
                       child: Center(
-                        child: Row(
-                          children: [
-                            Text(
-                              name[0],
-                              style: Theme.of(context).textTheme.titleMedium!
-                                  .copyWith(color: Colors.white),
-                            ),
-                          ],
+                        child: Text(
+                          name[0],
+                          style: Theme.of(context).textTheme.titleMedium!
+                              .copyWith(color: Colors.white),
                         ),
                       ),
                     ),
