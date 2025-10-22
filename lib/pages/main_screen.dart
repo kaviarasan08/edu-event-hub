@@ -75,6 +75,7 @@ class _MainScreenState extends State<MainScreen> {
 
       return Scaffold(
         body: _pages[_selectedIndex],
+        backgroundColor: Colors.black,
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           currentIndex: _selectedIndex,
