@@ -207,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Home")),
+      appBar: AppBar(title: const Text("House")),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
