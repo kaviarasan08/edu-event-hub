@@ -1,4 +1,6 @@
+import 'package:eduevent_hub/components/button.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -14,6 +16,7 @@ class QRScannerScreen extends StatefulWidget {
 class _QRScannerScreenState extends State<QRScannerScreen> {
   bool isProcessing = false;
   String? lastScanned;
+  final MobileScannerController _controller = MobileScannerController();
 
   final supabase = Supabase.instance.client;
 
@@ -29,7 +32,10 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       isProcessing = true;
       lastScanned = code;
     });
+    return attendanceFunction(code);
+  }
 
+  void attendanceFunction(String code) async {
     try {
       // Parse QR value: eventId_userId_uuid
       final parts = code.split("_");
@@ -64,12 +70,13 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       }
 
       final regId = regRes['id'];
+      _controller.stop();
 
       // 4️⃣ Insert attendance
       // final user = supabase.auth.currentUser;
 
       // show name card
-      showUserCard(userId, qrEventId, regId);
+      return showUserCard(userId, qrEventId, regId, code);
     } catch (e) {
       _showMessage("Error: $e", Colors.red);
       print(e);
@@ -88,66 +95,82 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     return res;
   }
 
-  void showUserCard(String userId, String qrEventId, String regId) async {
+  void showUserCard(
+    String userId,
+    String qrEventId,
+    String regId,
+    String qr_code,
+  ) async {
     final userData = await getUser(userId);
     String res = 'loading..';
     // 3️⃣ Check if attendance already exists
-    final attendRes = await supabase
-        .from("attendance")
-        .select("id")
-        .eq("registration_id", regId)
+    final registrationStatus = await supabase
+        .from("registrations")
+        .select("status")
+        .eq("ticket_qr", qr_code)
         .maybeSingle();
-
-    // if (attendRes != null) {
-    //   _showMessage("⚠️ Already Marked!", Colors.orange);
+    print('attendance : $registrationStatus');
+    // if (attendRes == null) {
+    //   _showMessage('User already exist', Colors.orange);
     //   return;
     // }
-    // setState(() {
-    //   res = ' ⚠️ Already Attendance Marked';
-    // });
-    await supabase.from("attendance").insert({
-      "registration_id": regId,
-      "event_id": qrEventId,
-      "scanned_by": userId,
-    });
+    if (registrationStatus!['status'] == 'registered') {
+      await supabase.from("attendance").insert({
+        "registration_id": regId,
+        "event_id": qrEventId,
+        "scanned_by": userId,
+      });
+      setState(() {
+        res = '✅ Attendance Marked';
+      });
+    }
 
-    setState(() {
-      res = '✅ Attendance Marked';
-    });
+    bool status = (registrationStatus['status'] == 'scanned') ? false : true;
+
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
         return Container(
           padding: const EdgeInsets.all(20),
+          height: 700,
           child: Column(
             spacing: 8.0,
+            mainAxisSize: MainAxisSize.max,
             children: [
               ListTile(
                 leading: (userData['profile_image_url'] != null)
-                    ? Image.network(userData['profile_image_url'])
+                    ? Container(
+                        decoration: BoxDecoration(shape: BoxShape.circle),
+                        child: Image.network(userData['profile_image_url']),
+                      )
                     : Icon(Icons.person),
                 title: Text(userData['name']),
                 subtitle: Text(userData['email']),
               ),
               Text(
-                (attendRes != null)
-                    ? 'Already attendance marked'
-                    : 'Attendance marked',
+                (status) ? 'Attendance marked' : 'Already attendance marked',
                 style: TextStyle(
-                  color: (attendRes != null)
-                      ? Colors.orange
-                      : (res == 'loading..')
-                      ? Colors.grey[400]
-                      : Colors.green,
+                  color: (status) ? Colors.green : Colors.orange,
                 ),
+              ),
+              LottieBuilder.asset(
+                (status) ? 'assets/success.json' : 'assets/blue_allert.json',
+                height: 250,
+                width: 400,
+              ),
+              SizedBox(height: 15),
+              CustomButton(
+                text: 'next',
+                onPressed: () {
+                  _controller.start();
+                  Navigator.pop(context);
+                },
               ),
             ],
           ),
         );
       },
     );
-
-  
 
     // _showMessage("✅ Attendance Marked", Colors.green);
   }
@@ -166,7 +189,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       body: Stack(
         // alignment: Alignment.center,
         children: [
-          MobileScanner(onDetect: _onDetect),
+          MobileScanner(controller: _controller, onDetect: _onDetect),
           if (isProcessing)
             Container(
               color: Colors.black54,

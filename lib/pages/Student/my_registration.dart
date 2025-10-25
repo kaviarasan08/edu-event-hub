@@ -3,8 +3,12 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MyRegistrationsPage extends StatefulWidget {
+  const MyRegistrationsPage({super.key});
   @override
-  _MyRegistrationsPageState createState() => _MyRegistrationsPageState();
+  _MyRegistrationsPageState createState() {
+    return _MyRegistrationsPageState();
+  }
+  
 }
 
 class _MyRegistrationsPageState extends State<MyRegistrationsPage> {

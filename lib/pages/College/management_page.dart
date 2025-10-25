@@ -39,32 +39,33 @@ class _EventManagementPageState extends State<EventManagementPage> {
       MaterialPageRoute(builder: (_) => QRScannerScreen(eventId: eventId)),
     );
 
-    if (result != null) {
-      try {
-        // Assume QR contains registration_id
-        final registrationId = result;
+    // if (result != null) {
+    //   try {
+    //     // Assume QR contains registration_id
+    //     final registrationId = result;
 
-        // Insert attendance record
-        final response = await supabase.from('attendance').insert({
-          'registration_id': registrationId,
-          'event_id': eventId,
-          'scanned_at': DateTime.now().toIso8601String(),
-        });
+    //     // Insert attendance record
+    //     final response = await supabase.from('attendance').insert({
+    //       'registration_id': registrationId,
+    //       'event_id': eventId,
+    //       'scanned_at': DateTime.now().toIso8601String(),
+    //     });
 
-        if (response.error == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Attendance marked successfully ✅")),
-          );
-          setState(() {}); // refresh UI
-        } else {
-          throw response.error!;
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error: $e")));
-      }
-    }
+    //     if (response.error == null) {
+    //       ScaffoldMessenger.of(context).showSnackBar(
+    //         const SnackBar(content: Text("Attendance marked successfully ✅")),
+    //       );
+    //       setState(() {}); // refresh UI
+    //     } else {
+    //       throw response.error!;
+    //     }
+    //   } catch (e) {
+    //     ScaffoldMessenger.of(
+    //       context,
+    //     ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    //   }
+    // }
+    print('result: $result');
   }
 
   Future<Map<String, dynamic>> getUser(String userId) async {
